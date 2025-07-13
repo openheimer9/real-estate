@@ -1,12 +1,21 @@
-import { Search, MapPin, Bed, Bath, Car, Star, Heart, Filter, Home, Users, TrendingUp } from "lucide-react";
+import { Search, MapPin, Bed, Bath, Car, Star, Heart, Filter, Home, Users, TrendingUp, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
 import apartmentHero from "@/assets/apartment-hero.jpg";
 import villaListing from "@/assets/villa-listing.jpg";
 
 const Index = () => {
+  const { toast } = useToast();
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchBudget, setSearchBudget] = useState("");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [favoriteListings, setFavoriteListings] = useState<number[]>([]);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   const featuredListings = [
     {
       id: 1,
@@ -81,6 +90,67 @@ const Index = () => {
     }
   ];
 
+  // Event handlers
+  const handleSearch = useCallback(() => {
+    if (!searchLocation.trim()) {
+      toast({
+        title: "Please enter a location",
+        description: "Enter a city, locality or landmark to search properties",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Searching properties...",
+      description: `Looking for properties in ${searchLocation}${searchBudget ? ` with budget ₹${searchBudget}` : ''}`,
+    });
+  }, [searchLocation, searchBudget, toast]);
+
+  const handleFilterToggle = useCallback((filter: string) => {
+    setActiveFilters(prev => 
+      prev.includes(filter) 
+        ? prev.filter(f => f !== filter)
+        : [...prev, filter]
+    );
+  }, []);
+
+  const handleFavoriteToggle = useCallback((listingId: number) => {
+    setFavoriteListings(prev => 
+      prev.includes(listingId)
+        ? prev.filter(id => id !== listingId)
+        : [...prev, listingId]
+    );
+    
+    const isAdding = !favoriteListings.includes(listingId);
+    toast({
+      title: isAdding ? "Added to favorites" : "Removed from favorites",
+      description: isAdding ? "Property saved to your favorites" : "Property removed from favorites",
+    });
+  }, [favoriteListings, toast]);
+
+  const handleLocationClick = useCallback((locationName: string) => {
+    setSearchLocation(locationName);
+    toast({
+      title: `Exploring ${locationName}`,
+      description: `Showing properties in ${locationName}`,
+    });
+  }, []);
+
+  const handleNavigation = useCallback((action: string) => {
+    toast({
+      title: `${action} clicked`,
+      description: `Navigating to ${action.toLowerCase()} page...`,
+    });
+  }, [toast]);
+
+  const handlePropertyClick = useCallback((property: any) => {
+    toast({
+      title: "Opening property details",
+      description: `Viewing details for ${property.title}`,
+    });
+  }, [toast]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -88,22 +158,41 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
+              <span className="text-white font-bold text-sm">B</span>
             </div>
-            <span className="text-xl font-bold text-foreground">RentSpace</span>
+            <span className="text-xl font-bold text-foreground">Btechkers</span>
           </div>
           
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-foreground hover:text-primary transition-colors">Explore</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">List Property</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">Pricing</a>
+            <button onClick={() => handleNavigation("Explore")} className="text-foreground hover:text-primary transition-colors">Explore</button>
+            <button onClick={() => handleNavigation("List Property")} className="text-foreground hover:text-primary transition-colors">List Property</button>
+            <button onClick={() => handleNavigation("Pricing")} className="text-foreground hover:text-primary transition-colors">Pricing</button>
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">Login</Button>
-            <Button size="sm" className="btn-primary">Sign Up</Button>
+            <Button variant="ghost" size="sm" onClick={() => handleNavigation("Login")}>Login</Button>
+            <Button size="sm" className="btn-primary" onClick={() => handleNavigation("Sign Up")}>Sign Up</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden bg-card border-t border-border px-4 py-4">
+            <nav className="flex flex-col space-y-4">
+              <button onClick={() => { handleNavigation("Explore"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">Explore</button>
+              <button onClick={() => { handleNavigation("List Property"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">List Property</button>
+              <button onClick={() => { handleNavigation("Pricing"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">Pricing</button>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -127,13 +216,20 @@ const Index = () => {
                   <Input 
                     placeholder="Enter city, locality or landmark"
                     className="pl-10 search-input"
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
                   />
                 </div>
               </div>
               <div>
-                <Input placeholder="Budget (₹)" className="search-input" />
+                <Input 
+                  placeholder="Budget (₹)" 
+                  className="search-input" 
+                  value={searchBudget}
+                  onChange={(e) => setSearchBudget(e.target.value)}
+                />
               </div>
-              <Button className="btn-primary h-12">
+              <Button className="btn-primary h-12" onClick={handleSearch}>
                 <Search className="h-5 w-5 mr-2" />
                 Search
               </Button>
@@ -142,7 +238,11 @@ const Index = () => {
             {/* Quick Filters */}
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
               {['1 BHK', '2 BHK', '3 BHK', 'Furnished', 'Pet Friendly', 'Parking'].map((filter) => (
-                <div key={filter} className="filter-chip">
+                <div 
+                  key={filter} 
+                  className={`filter-chip ${activeFilters.includes(filter) ? 'active' : ''}`}
+                  onClick={() => handleFilterToggle(filter)}
+                >
                   {filter}
                 </div>
               ))}
@@ -155,7 +255,7 @@ const Index = () => {
       <section className="py-16 px-4 bg-secondary">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
-            Why Choose RentSpace?
+            Why Choose Btechkers?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {features.map((feature) => (
@@ -174,7 +274,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-foreground">Featured Properties</h2>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => handleNavigation("Filters")}>
               <Filter className="h-4 w-4" />
               Filters
             </Button>
@@ -182,7 +282,7 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredListings.map((listing) => (
-              <Card key={listing.id} className="property-card overflow-hidden group cursor-pointer">
+              <Card key={listing.id} className="property-card overflow-hidden group cursor-pointer" onClick={() => handlePropertyClick(listing)}>
                 <div className="relative">
                   <img 
                     src={listing.image} 
@@ -198,8 +298,12 @@ const Index = () => {
                     size="icon" 
                     variant="ghost" 
                     className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFavoriteToggle(listing.id);
+                    }}
                   >
-                    <Heart className="h-4 w-4" />
+                    <Heart className={`h-4 w-4 ${favoriteListings.includes(listing.id) ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                   <div className="absolute bottom-3 left-3">
                     <span className="price-badge text-lg font-bold">
@@ -254,7 +358,7 @@ const Index = () => {
           </div>
           
           <div className="text-center mt-8">
-            <Button size="lg" className="btn-primary">
+            <Button size="lg" className="btn-primary" onClick={() => handleNavigation("View All Properties")}>
               View All Properties
             </Button>
           </div>
@@ -269,7 +373,7 @@ const Index = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {popularLocations.map((location) => (
-              <Card key={location.name} className="property-card text-center p-6 cursor-pointer">
+              <Card key={location.name} className="property-card text-center p-6 cursor-pointer" onClick={() => handleLocationClick(location.name)}>
                 <location.icon className="h-8 w-8 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2">{location.name}</h3>
                 <p className="text-muted-foreground text-sm">
@@ -288,13 +392,13 @@ const Index = () => {
             Ready to List Your Property?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of property owners and brokers who trust RentSpace
+            Join thousands of property owners and brokers who trust Btechkers
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={() => handleNavigation("List Your Property")}>
               List Your Property
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" onClick={() => handleNavigation("Learn More")}>
               Learn More
             </Button>
           </div>
@@ -308,9 +412,9 @@ const Index = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">R</span>
+                  <span className="text-white font-bold text-sm">B</span>
                 </div>
-                <span className="text-xl font-bold text-foreground">RentSpace</span>
+                <span className="text-xl font-bold text-foreground">Btechkers</span>
               </div>
               <p className="text-muted-foreground text-sm">
                 Making rental search simple and transparent across India.
@@ -347,7 +451,7 @@ const Index = () => {
           
           <div className="border-t border-border pt-8 text-center">
             <p className="text-muted-foreground text-sm">
-              © 2024 RentSpace. All rights reserved.
+              © 2024 Btechkers. All rights reserved.
             </p>
           </div>
         </div>
