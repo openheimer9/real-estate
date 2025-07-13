@@ -1,40 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* RentSpace Design System - Real Estate Rental Platform */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Base Colors - Warm and Professional */
+    --background: 0 0% 98%;  /* Warm White #FAFAFA */
+    --foreground: 210 11% 15%;  /* Neutral Grey #111827 */
+    
+    /* Real Estate Brand Colors */
+    --primary: 213 94% 68%;  /* Sky Blue #3B82F6 */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 213 94% 85%;
+    
+    --accent: 158 64% 52%;  /* Emerald Green #10B981 */
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 158 64% 85%;
+    
+    --success: 158 64% 52%;  /* Emerald Green for success states */
+    --success-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;  /* Red #EF4444 for delete/danger */
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Card and Surface Colors */
+    --card: 0 0% 100%;  /* Pure white for cards */
+    --card-foreground: 210 11% 15%;
+    --card-border: 220 13% 91%;
+    
+    /* Surface Variations */
+    --secondary: 220 14% 96%;  /* Light Grey #F4F4F5 */
+    --secondary-foreground: 210 11% 15%;
+    
+    --muted: 220 13% 91%;
+    --muted-foreground: 215 16% 47%;  /* Slate #6B7280 */
+    
+    /* Interactive Elements */
+    --border: 220 13% 91%;
+    --input: 0 0% 100%;
+    --input-border: 220 13% 91%;
+    --ring: 213 94% 68%;  /* Primary blue for focus rings */
+    
+    /* Real Estate Specific Colors */
+    --price: 158 64% 52%;  /* Emerald for price displays */
+    --price-foreground: 0 0% 100%;
+    
+    --feature: 213 94% 68%;  /* Primary blue for feature badges */
+    --feature-foreground: 0 0% 100%;
+    
+    /* Gradients for Hero Sections */
+    --gradient-primary: linear-gradient(135deg, hsl(213 94% 68%), hsl(213 94% 78%));
+    --gradient-hero: linear-gradient(135deg, hsl(213 94% 68%) 0%, hsl(158 64% 52%) 100%);
+    
+    /* Shadows for Real Estate Cards */
+    --shadow-card: 0 1px 3px 0 hsl(220 13% 91% / 0.1), 0 1px 2px 0 hsl(220 13% 91% / 0.06);
+    --shadow-card-hover: 0 10px 15px -3px hsl(220 13% 91% / 0.1), 0 4px 6px -2px hsl(220 13% 91% / 0.05);
+    --shadow-button: 0 1px 2px 0 hsl(213 94% 68% / 0.2);
 
     --radius: 0.5rem;
 
@@ -100,6 +124,53 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+  }
+}
+
+@layer components {
+  /* Real Estate Card Components */
+  .property-card {
+    @apply bg-card rounded-lg border border-card-border transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .property-card:hover {
+    @apply transform -translate-y-1;
+    box-shadow: var(--shadow-card-hover);
+  }
+  
+  .price-badge {
+    @apply bg-price text-price-foreground px-3 py-1 rounded-full font-semibold text-sm;
+  }
+  
+  .feature-badge {
+    @apply bg-feature text-feature-foreground px-2 py-1 rounded text-xs font-medium;
+  }
+  
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors;
+    box-shadow: var(--shadow-button);
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 transition-colors;
+  }
+  
+  /* Search and Filter Components */
+  .search-input {
+    @apply bg-input border border-input-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-ring focus:border-ring transition-all;
+  }
+  
+  .filter-chip {
+    @apply bg-secondary text-secondary-foreground border border-border rounded-full px-3 py-1 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer;
+  }
+  
+  .filter-chip.active {
+    @apply bg-primary text-primary-foreground;
   }
 }

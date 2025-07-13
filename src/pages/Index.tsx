@@ -1,12 +1,357 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Search, MapPin, Bed, Bath, Car, Star, Heart, Filter, Home, Users, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import apartmentHero from "@/assets/apartment-hero.jpg";
+import villaListing from "@/assets/villa-listing.jpg";
 
 const Index = () => {
+  const featuredListings = [
+    {
+      id: 1,
+      title: "Modern 2BHK Apartment",
+      location: "Bandra West, Mumbai",
+      price: "₹45,000",
+      originalPrice: "₹50,000",
+      image: apartmentHero,
+      beds: 2,
+      baths: 2,
+      parking: true,
+      furnished: true,
+      rating: 4.8,
+      type: "Apartment",
+      featured: true,
+    },
+    {
+      id: 2,
+      title: "Spacious 3BHK Villa",
+      location: "Koramangala, Bangalore",
+      price: "₹65,000",
+      image: villaListing,
+      beds: 3,
+      baths: 3,
+      parking: true,
+      furnished: false,
+      rating: 4.6,
+      type: "Villa",
+    },
+    {
+      id: 3,
+      title: "Cozy 1BHK Studio",
+      location: "CP, New Delhi",
+      price: "₹25,000",
+      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=400&fit=crop",
+      beds: 1,
+      baths: 1,
+      parking: false,
+      furnished: true,
+      rating: 4.5,
+      type: "Studio",
+    },
+  ];
+
+  const popularLocations = [
+    { name: "Mumbai", properties: 1240, icon: Home },
+    { name: "Bangalore", properties: 890, icon: TrendingUp },
+    { name: "Delhi", properties: 750, icon: Users },
+    { name: "Pune", properties: 620, icon: Home },
+  ];
+
+  const features = [
+    {
+      title: "Verified Properties",
+      description: "All listings are verified by our team",
+      icon: "✓"
+    },
+    {
+      title: "Direct Contact",
+      description: "Connect directly with owners & brokers",
+      icon: "📞"
+    },
+    {
+      title: "Smart Search",
+      description: "AI-powered recommendations",
+      icon: "🤖"
+    },
+    {
+      title: "Secure Payments",
+      description: "Safe and secure payment processing",
+      icon: "🔒"
+    }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">R</span>
+            </div>
+            <span className="text-xl font-bold text-foreground">RentSpace</span>
+          </div>
+          
+          <nav className="hidden md:flex items-center space-x-6">
+            <a href="#" className="text-foreground hover:text-primary transition-colors">Explore</a>
+            <a href="#" className="text-foreground hover:text-primary transition-colors">List Property</a>
+            <a href="#" className="text-foreground hover:text-primary transition-colors">Pricing</a>
+          </nav>
+          
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm">Login</Button>
+            <Button size="sm" className="btn-primary">Sign Up</Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="hero-gradient py-20 px-4">
+        <div className="container mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            Find Your Perfect
+            <span className="block">Rental Home</span>
+          </h1>
+          <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
+            Discover thousands of verified rental properties across India. 
+            Connect directly with owners and brokers.
+          </p>
+          
+          {/* Search Bar */}
+          <div className="bg-white rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    placeholder="Enter city, locality or landmark"
+                    className="pl-10 search-input"
+                  />
+                </div>
+              </div>
+              <div>
+                <Input placeholder="Budget (₹)" className="search-input" />
+              </div>
+              <Button className="btn-primary h-12">
+                <Search className="h-5 w-5 mr-2" />
+                Search
+              </Button>
+            </div>
+            
+            {/* Quick Filters */}
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+              {['1 BHK', '2 BHK', '3 BHK', 'Furnished', 'Pet Friendly', 'Parking'].map((filter) => (
+                <div key={filter} className="filter-chip">
+                  {filter}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 px-4 bg-secondary">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
+            Why Choose RentSpace?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {features.map((feature) => (
+              <Card key={feature.title} className="property-card text-center p-6">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Listings */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-foreground">Featured Properties</h2>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filters
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredListings.map((listing) => (
+              <Card key={listing.id} className="property-card overflow-hidden group cursor-pointer">
+                <div className="relative">
+                  <img 
+                    src={listing.image} 
+                    alt={listing.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {listing.featured && (
+                    <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
+                      Featured
+                    </Badge>
+                  )}
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                  <div className="absolute bottom-3 left-3">
+                    <span className="price-badge text-lg font-bold">
+                      {listing.price}/month
+                    </span>
+                  </div>
+                </div>
+                
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {listing.type}
+                    </Badge>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="text-sm ml-1">{listing.rating}</span>
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-semibold text-foreground mb-1">{listing.title}</h3>
+                  <p className="text-muted-foreground text-sm mb-3 flex items-center">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {listing.location}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-3">
+                      <span className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        {listing.beds}
+                      </span>
+                      <span className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        {listing.baths}
+                      </span>
+                      {listing.parking && (
+                        <span className="flex items-center">
+                          <Car className="h-4 w-4 mr-1" />
+                          P
+                        </span>
+                      )}
+                    </div>
+                    {listing.furnished && (
+                      <Badge variant="outline" className="text-xs">
+                        Furnished
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <Button size="lg" className="btn-primary">
+              View All Properties
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Locations */}
+      <section className="py-16 px-4 bg-secondary">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-foreground mb-8 text-center">
+            Popular Locations
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {popularLocations.map((location) => (
+              <Card key={location.name} className="property-card text-center p-6 cursor-pointer">
+                <location.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                <h3 className="font-semibold text-foreground mb-2">{location.name}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {location.properties}+ properties
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 px-4 hero-gradient">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Ready to List Your Property?
+          </h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Join thousands of property owners and brokers who trust RentSpace
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+              List Your Property
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              Learn More
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border py-12 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">R</span>
+                </div>
+                <span className="text-xl font-bold text-foreground">RentSpace</span>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                Making rental search simple and transparent across India.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">For Renters</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Search Properties</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Saved Properties</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Rent Calculator</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">For Owners</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">List Property</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Pricing Plans</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Owner Dashboard</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">Support</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Terms & Privacy</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-border pt-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              © 2024 RentSpace. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
