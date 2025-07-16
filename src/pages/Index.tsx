@@ -1,20 +1,22 @@
-import { Search, MapPin, Bed, Bath, Car, Star, Heart, Filter, Home, Users, TrendingUp, Menu } from "lucide-react";
+import { Search, MapPin, Bed, Bath, Car, Star, Heart, Filter, Home, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate, Link } from "react-router-dom";
 import apartmentHero from "@/assets/apartment-hero.jpg";
 import villaListing from "@/assets/villa-listing.jpg";
+import Layout from "@/components/layout/Layout";
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchLocation, setSearchLocation] = useState("");
   const [searchBudget, setSearchBudget] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [favoriteListings, setFavoriteListings] = useState<number[]>([]);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const featuredListings = [
     {
@@ -95,17 +97,13 @@ const Index = () => {
     if (!searchLocation.trim()) {
       toast({
         title: "Please enter a location",
-        description: "Enter a city, locality or landmark to search properties",
-        variant: "destructive",
+        description: "Location is required for search",
+        variant: "destructive"
       });
       return;
     }
-    
-    toast({
-      title: "Searching properties...",
-      description: `Looking for properties in ${searchLocation}${searchBudget ? ` with budget ₹${searchBudget}` : ''}`,
-    });
-  }, [searchLocation, searchBudget, toast]);
+    navigate(`/explore?location=${encodeURIComponent(searchLocation)}&budget=${encodeURIComponent(searchBudget)}`);
+  }, [searchLocation, searchBudget, toast, navigate]);
 
   const handleFilterToggle = useCallback((filter: string) => {
     setActiveFilters(prev => 
@@ -121,80 +119,32 @@ const Index = () => {
         ? prev.filter(id => id !== listingId)
         : [...prev, listingId]
     );
-    
-    const isAdding = !favoriteListings.includes(listingId);
-    toast({
-      title: isAdding ? "Added to favorites" : "Removed from favorites",
-      description: isAdding ? "Property saved to your favorites" : "Property removed from favorites",
-    });
-  }, [favoriteListings, toast]);
-
-  const handleLocationClick = useCallback((locationName: string) => {
-    setSearchLocation(locationName);
-    toast({
-      title: `Exploring ${locationName}`,
-      description: `Showing properties in ${locationName}`,
-    });
   }, []);
 
-  const handleNavigation = useCallback((action: string) => {
-    toast({
-      title: `${action} clicked`,
-      description: `Navigating to ${action.toLowerCase()} page...`,
-    });
-  }, [toast]);
+  const handleLocationClick = useCallback((location: string) => {
+    navigate(`/explore?location=${encodeURIComponent(location)}`);
+  }, [navigate]);
 
-  const handlePropertyClick = useCallback((property: any) => {
-    toast({
-      title: "Opening property details",
-      description: `Viewing details for ${property.title}`,
-    });
-  }, [toast]);
+  const handlePropertyClick = useCallback((listing: {
+    id: number;
+    title: string;
+    location: string;
+    price: string;
+    image: string;
+    beds: number;
+    baths: number;
+    parking: boolean;
+    furnished: boolean;
+    rating: number;
+    type: string;
+    featured?: boolean;
+    originalPrice?: string;
+  }) => {
+    navigate(`/listing/${listing.id}`);
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">B</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Btechkers</span>
-          </div>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            <button onClick={() => handleNavigation("Explore")} className="text-foreground hover:text-primary transition-colors">Explore</button>
-            <button onClick={() => handleNavigation("List Property")} className="text-foreground hover:text-primary transition-colors">List Property</button>
-            <button onClick={() => handleNavigation("Pricing")} className="text-foreground hover:text-primary transition-colors">Pricing</button>
-          </nav>
-          
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => handleNavigation("Login")}>Login</Button>
-            <Button size="sm" className="btn-primary" onClick={() => handleNavigation("Sign Up")}>Sign Up</Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Mobile Menu */}
-        {showMobileMenu && (
-          <div className="md:hidden bg-card border-t border-border px-4 py-4">
-            <nav className="flex flex-col space-y-4">
-              <button onClick={() => { handleNavigation("Explore"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">Explore</button>
-              <button onClick={() => { handleNavigation("List Property"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">List Property</button>
-              <button onClick={() => { handleNavigation("Pricing"); setShowMobileMenu(false); }} className="text-foreground hover:text-primary transition-colors text-left">Pricing</button>
-            </nav>
-          </div>
-        )}
-      </header>
-
+    <Layout>
       {/* Hero Section */}
       <section className="hero-gradient py-20 px-4">
         <div className="container mx-auto text-center">
@@ -255,7 +205,7 @@ const Index = () => {
       <section className="py-16 px-4 bg-secondary">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
-            Why Choose Btechkers?
+            Why Choose RentSpace?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {features.map((feature) => (
@@ -274,10 +224,12 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-foreground">Featured Properties</h2>
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => handleNavigation("Filters")}>
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
+            <Link to="/explore">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                All Filters
+              </Button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -358,9 +310,11 @@ const Index = () => {
           </div>
           
           <div className="text-center mt-8">
-            <Button size="lg" className="btn-primary" onClick={() => handleNavigation("View All Properties")}>
-              View All Properties
-            </Button>
+            <Link to="/explore">
+              <Button size="lg" className="btn-primary">
+                View All Properties
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -392,72 +346,24 @@ const Index = () => {
             Ready to List Your Property?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of property owners and brokers who trust Btechkers
+            Join thousands of property owners and brokers who trust RentSpace
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={() => handleNavigation("List Your Property")}>
-              List Your Property
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" onClick={() => handleNavigation("Learn More")}>
-              Learn More
-            </Button>
+            <Link to="/list-property">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+                List Your Property
+              </Button>
+            </Link>
+            <Link to="/pricing">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+                View Pricing
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
+    </Layout>
+);
 
-      {/* Footer */}
-      <footer className="bg-card border-t border-border py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 hero-gradient rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">B</span>
-                </div>
-                <span className="text-xl font-bold text-foreground">Btechkers</span>
-              </div>
-              <p className="text-muted-foreground text-sm">
-                Making rental search simple and transparent across India.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">For Renters</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Search Properties</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Saved Properties</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Rent Calculator</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">For Owners</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">List Property</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Pricing Plans</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Owner Dashboard</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">Support</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms & Privacy</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-border pt-8 text-center">
-            <p className="text-muted-foreground text-sm">
-              © 2024 Btechkers. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
 };
-
 export default Index;
