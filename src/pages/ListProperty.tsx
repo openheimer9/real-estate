@@ -15,26 +15,24 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/layout/Layout";
+import { API_URL } from '../config';
+
+// Define property types that match your backend model
+const propertyTypes = ["Apartment", "Villa", "House", "Office", "Shop", "Land"] as const;
+const propertyStatuses = ["For Rent", "For Sale"] as const;
 
 const propertySchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(20, "Description must be at least 20 characters"),
-  type: z.enum(["Apartment", "House", "Villa", "Studio", "PG"]),
-  bhkType: z.enum(["1 BHK", "2 BHK", "3 BHK", "4 BHK", "5+ BHK"]),
-  rent: z.string().min(1, "Rent is required"),
   location: z.string().min(3, "Location is required"),
-  address: z.string().min(5, "Address is required"),
-  furnished: z.enum(["Fully Furnished", "Semi Furnished", "Unfurnished"]),
-  bedrooms: z.string(),
-  bathrooms: z.string(),
-  area: z.string().min(1, "Area is required"),
+  price: z.number().positive("Price must be a positive number"),
+  beds: z.number().int().min(0, "Number of beds must be 0 or more"),
+  baths: z.number().int().min(0, "Number of baths must be 0 or more"),
   parking: z.boolean().default(false),
-  petFriendly: z.boolean().default(false),
-  ac: z.boolean().default(false),
-  gym: z.boolean().default(false),
-  swimmingPool: z.boolean().default(false),
-  powerBackup: z.boolean().default(false),
-  security: z.boolean().default(false),
+  furnished: z.boolean().default(false),
+  area: z.number().positive("Area must be a positive number"),
+  type: z.enum(propertyTypes),
+  status: z.enum(propertyStatuses),
 });
 
 type PropertyFormValues = z.infer<typeof propertySchema>;
@@ -44,6 +42,8 @@ const ListProperty = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
@@ -94,18 +94,63 @@ const ListProperty = () => {
   const removeImage = (index: number) => {
     const newImages = [...images];
     const newUrls = [...imageUrls];
+    const newUploadedUrls = [...uploadedImageUrls];
     
     // Revoke the URL to prevent memory leaks
     URL.revokeObjectURL(newUrls[index]);
     
     newImages.splice(index, 1);
     newUrls.splice(index, 1);
+    if (newUploadedUrls[index]) {
+      newUploadedUrls.splice(index, 1);
+    }
     
     setImages(newImages);
     setImageUrls(newUrls);
+    setUploadedImageUrls(newUploadedUrls);
   };
 
-  const onSubmit = (data: PropertyFormValues) => {
+  // In the uploadImagesToCloudinary function, update the fetch URL
+  const uploadImagesToCloudinary = async () => {
+    setIsUploading(true);
+    const uploadedUrls: string[] = [];
+    
+    try {
+      for (const image of images) {
+        const formData = new FormData();
+        formData.append('image', image);
+        
+        const response = await fetch(`${API_URL}/property/upload-image`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+        
+        const data = await response.json();
+        uploadedUrls.push(data.url);
+      }
+      
+      setUploadedImageUrls(uploadedUrls);
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast({
+        title: "Image upload failed",
+        description: "There was an error uploading your images. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  // In the onSubmit function, update the fetch URL
+  const onSubmit = async (data: PropertyFormValues) => {
     // Check if at least one image is uploaded
     if (images.length === 0) {
       toast({
@@ -116,18 +161,49 @@ const ListProperty = () => {
       return;
     }
     
-    // In a real app, you would upload images to a server and get URLs back
-    // Then combine those URLs with the form data and submit to your API
-    console.log("Property data:", data);
-    console.log("Images:", images);
-    
-    toast({
-      title: "Property listed successfully",
-      description: "Your property has been listed for rent",
-    });
-    
-    // Redirect to dashboard
-    navigate("/dashboard");
+    try {
+      // First upload images to Cloudinary
+      const imageUrls = await uploadImagesToCloudinary();
+      
+      // Then create property with image URLs
+      const propertyData = {
+        ...data,
+        // Ensure numeric values are properly converted
+        price: Number(data.price),
+        beds: Number(data.beds),
+        baths: Number(data.baths),
+        area: Number(data.area),
+        images: imageUrls,
+      };
+      
+      const response = await fetch(`${API_URL}/property/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(propertyData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create property listing');
+      }
+      
+      toast({
+        title: "Property listed successfully",
+        description: "Your property has been listed for rent",
+      });
+      
+      // Redirect to dashboard
+      navigate("/dashboard");
+    } catch (error) {
+      console.error('Property submission error:', error);
+      toast({
+        title: "Submission failed",
+        description: "There was an error submitting your property. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

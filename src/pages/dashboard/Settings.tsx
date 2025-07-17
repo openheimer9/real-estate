@@ -140,24 +140,40 @@ const Settings = () => {
     });
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      // In a real app, upload the file to your server and get a URL back
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setUser({
-            ...user,
-            avatar: event.target.result as string,
-          });
-          
-          toast({
-            title: "Avatar updated",
-            description: "Your profile picture has been updated",
-          });
+      try {
+        const formData = new FormData();
+        formData.append('image', e.target.files[0]);
+        
+        const response = await fetch('/api/user/upload-avatar', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload avatar');
         }
-      };
-      reader.readAsDataURL(e.target.files[0]);
+        
+        const data = await response.json();
+        
+        setUser({
+          ...user,
+          avatar: data.url,
+        });
+        
+        toast({
+          title: "Avatar updated",
+          description: "Your profile picture has been updated",
+        });
+      } catch (error) {
+        console.error('Avatar upload error:', error);
+        toast({
+          title: "Upload failed",
+          description: "There was an error uploading your avatar. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/layout/Layout";
 
 const loginSchema = z.object({
@@ -20,7 +21,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Get the redirect path from location state or default to dashboard
+  const from = (location.state as LocationState)?.from?.pathname || "/dashboard";
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -30,17 +37,28 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    // Mock login - replace with actual authentication logic
-    console.log("Login attempt:", data);
+  const onSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
     
-    toast({
-      title: "Login successful",
-      description: "Welcome back to RentSpace!",
-    });
-    
-    // Redirect to dashboard
-    navigate("/dashboard");
+    try {
+      await login(data.email, data.password);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to RentSpace!",
+      });
+      
+      // Redirect to the page they were trying to access or dashboard
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -114,8 +132,8 @@ const Login = () => {
                 </Link>
               </div>
               
-              <Button type="submit" className="w-full btn-primary">
-                Sign In
+              <Button type="submit" className="w-full btn-primary" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </Form>
