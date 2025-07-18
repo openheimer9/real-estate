@@ -1,25 +1,13 @@
-import { Express } from 'express';
+// src/types/express.d.ts
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        email: string;
-        role: string;
-      };
-    }
-  }
+export interface UserPayload {
+  userId: string;
+  email: string;
+  role: string;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        email: string;
-        role: string;
-      };
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: UserPayload;
   }
 }

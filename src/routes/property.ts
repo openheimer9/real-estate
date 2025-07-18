@@ -25,6 +25,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Create property
+// Make sure all route handlers have proper type annotations
 router.post('/create', authMiddleware, async (req: express.Request, res: express.Response) => {
   try {
     // Now TypeScript knows that req.user exists and has userId
@@ -41,13 +42,17 @@ router.post('/create', authMiddleware, async (req: express.Request, res: express
       message: 'Property created successfully', 
       property 
     });
-  } catch (error: any) {
-    console.error('Property creation error:', error);
+  } catch (error) {
+    console.error('Error:', error);
+  
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
+  
     return res.status(500).json({ 
-      message: 'Error creating property',
-      error: error.message
+      message: 'Something went wrong', 
+      error: message 
     });
   }
+  
 });
 
 // Upload property image
@@ -83,10 +88,18 @@ router.get('/', async (req, res) => {
   try {
     const properties = await Property.find().populate('owner', 'name email avatar');
     return res.status(200).json({ properties });
-  } catch (error: any) {
-    console.error('Property fetch error:', error);
-    return res.status(500).json({ message: 'Error fetching properties', error: error.message });
+  } 
+  catch (error) {
+    console.error('Error:', error);
+  
+    const message = error instanceof Error ? error.message : 'Error fetching properties';
+  
+    return res.status(500).json({ 
+      message: 'Something went wrong', 
+      error: message 
+    });
   }
+  
 });
 
 // Get property by ID
@@ -99,10 +112,17 @@ router.get('/:id', async (req, res) => {
     }
     
     return res.status(200).json({ property });
-  } catch (error: any) {
-    console.error('Property fetch error:', error);
-    return res.status(500).json({ message: 'Error fetching property', error: error.message });
+  } catch (error) {
+    console.error('Error:', error);
+  
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
+  
+    return res.status(500).json({ 
+      message: 'Something went wrong', 
+      error: message 
+    });
   }
+  
 });
 
 // Get user's properties
@@ -110,10 +130,17 @@ router.get('/user/listings', authMiddleware, async (req: express.Request, res: e
   try {
     const properties = await Property.find({ owner: req.user?.userId });
     return res.status(200).json({ properties });
-  } catch (error: any) {
-    console.error('Property fetch error:', error);
-    return res.status(500).json({ message: 'Error fetching properties', error: error.message });
+  }catch (error) {
+    console.error('Error:', error);
+  
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
+  
+    return res.status(500).json({ 
+      message: 'Something went wrong', 
+      error: message 
+    });
   }
+  
 });
 
 // Replace module.exports = router; with:

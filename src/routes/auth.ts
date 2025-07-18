@@ -6,7 +6,8 @@ import bcrypt from 'bcryptjs';
 const router = express.Router();
 
 // Login route
-router.post('/login', async (req, res) => {
+// Add proper type annotations to request and response objects
+router.post('/login', async (req: express.Request, res: express.Response) => {
   try {
     const { email, password } = req.body;
     

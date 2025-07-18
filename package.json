@@ -9,7 +9,10 @@
   "build:dev": "vite build --mode development",
   "lint": "eslint .",
   "preview": "vite preview",
-  "server": "ts-node-dev --esm --respawn server.ts"
+  "server": "ts-node-dev --esm --respawn server.ts",
+  "build:server": "tsc server.ts --outDir dist-server",
+  "start:server": "node dist-server/server.js",
+  "dev:server": "npm run build:server && npm run start:server"
   
 },
   "dependencies": {

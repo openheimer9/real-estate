@@ -1,17 +1,20 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
+import * as express from 'express';
+import * as dotenv from 'dotenv';
+import * as cookieParser from 'cookie-parser';
+import * as cors from 'cors';
 import mongoose from 'mongoose';
-import path from 'path';
-import multer from 'multer';
+import * as path from 'path';
+import * as multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs';
-import jwt from 'jsonwebtoken';
+import * as fs from 'fs'; // Changed from node:fs to fs
+import * as jwt from 'jsonwebtoken';
+
 // Setup routes
-import authRoutes from './src/routes/auth';
-import userRoutes from './src/routes/user';
-import propertyRoutes from './src/routes/property';
+import authRoutes from './src/routes/auth'; // Using relative path instead of alias
+import userRoutes from './src/routes/user'; // Using path alias
+import propertyRoutes from './src/routes/property'; // Using path alias
+import { UserPayload } from './src/types/express';
+
 // Load environment variables
 dotenv.config();
 
@@ -30,14 +33,18 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:8080',
+  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
 
 // Connect to MongoDB
 const connectToDatabase = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string);
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is not defined');
+    }
+    await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -56,11 +63,21 @@ const authMiddleware = (req: express.Request, res: express.Response, next: expre
       return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
-    req.user = decoded;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not defined');
+    }
+    
+    const decoded = jwt.verify(token, jwtSecret) as UserPayload;
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role
+    };
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    const message = error instanceof Error ? error.message : 'Unauthorized: Invalid token';
+    return res.status(401).json({ message });
   }
 };
 
@@ -78,8 +95,6 @@ const withRoles = (roles: string[]) => {
     next();
   };
 };
-
-
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);

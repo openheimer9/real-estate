@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export interface IUser extends mongoose.Document {
+// Change this interface to not extend mongoose.Document directly
+export interface IUser {
   name: string;
   email: string;
   password: string;
@@ -29,6 +30,9 @@ export interface IUser extends mongoose.Document {
   };
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
+
+// Add this type for the Mongoose model
+export type UserDocument = mongoose.Document & IUser;
 
 const UserSchema = new mongoose.Schema<IUser>(
   {
@@ -77,7 +81,7 @@ UserSchema.pre('save', async function(next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
+  } catch (error: err) {
     next(error);
   }
 });
@@ -87,6 +91,6 @@ UserSchema.methods.comparePassword = async function(candidatePassword: string) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+const User = mongoose.models.User || mongoose.model<UserDocument>('User', UserSchema);
 
 export default User;
